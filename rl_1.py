@@ -3,7 +3,7 @@ import numpy as np
 import random
 
 class QLearningAgent:
-    def __init__(self, env_name="tiny", episodes=1000, alpha=0.1, gamma=0.99, epsilon=0.1):
+    def __init__(self, env_name="small", episodes=1000, alpha=0.1, gamma=0.99, epsilon=0.1):
         self.env_name = env_name
         self.episodes = episodes
         self.alpha = alpha
