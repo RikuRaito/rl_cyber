@@ -1,4 +1,3 @@
-from math import gamma
 import nasim
 import numpy as np
 import random
@@ -141,26 +140,26 @@ def plot_rewards(histories, labels, moving_avg_window=100):
 
 if __name__ == "__main__":
     # --- 実験パラメータ ---
-    alpha = 0.1
-    gamma_to_test = [0.4, 0.6, 0.99]
+    alpha_to_test = [0.1, 0.4, 0.8]
+    gamma = 0.99
     epsilon = 0.1
     episode= 8000
 
     all_histories = []
     all_labels = []
 
-    for gamma in gamma_to_test:
+    for alpha in alpha_to_test:
         agent = QLearningAgent(
             episodes=episode,
             alpha=alpha,
             gamma=gamma,
             epsilon=epsilon
         )
-        print(f"\n--- Experimenting with gamma ---")
+        print(f"\n--- Experimenting with alpha ---")
         history = agent.train()
         # agent.test_policy() # 最終テストは一旦コメントアウト
 
         all_histories.append(history)
-        all_labels.append(f"gamma = {gamma}")
+        all_labels.append(f"alpha = {alpha}")
     
     plot_rewards(all_histories, all_labels)
