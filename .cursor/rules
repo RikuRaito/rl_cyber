@@ -1,0 +1,83 @@
+# NASim強化学習プロジェクト - Cursorルール
+
+## プロジェクト概要
+このプロジェクトは、NASim（Network Attack Simulator）というサイバー攻撃シミュレーション環境を使用して、強化学習アルゴリズムでAIエージェントを訓練するものです。
+
+## 技術スタック
+- **Python 3.13+**
+- **NASim**: サイバー攻撃シミュレーション環境
+- **NumPy**: 数値計算
+- **Gymnasium**: 強化学習環境インターフェース（NASimが使用）
+
+## 重要な概念
+
+### NASim環境
+- **環境**: `nasim.make_benchmark()` で作成
+- **観測空間**: ネットワークの状態を表す配列（例: 56次元）
+- **アクション空間**: スキャン、エクスプロイト、権限昇格などの攻撃行動
+- **報酬**: 目標達成（機密情報取得）に対する報酬
+
+### 強化学習アルゴリズム
+- **Q学習**: 状態-行動ペアの価値（Q値）を学習
+- **Epsilon-Greedy**: 探索と活用のバランスを取る行動選択
+- **Qテーブル**: 状態をキー、各アクションのQ値を値とする辞書
+
+## コーディング規約
+
+### 環境の初期化
+```python
+env = nasim.make_benchmark(
+    ENV_NAME,
+    fully_obs=True,      # 完全観測モード
+    flat_actions=True,   # フラットなアクション空間（整数インデックス）
+    flat_obs=True        # フラットな観測空間（1次元配列）
+)
+```
+
+### 環境の使用方法
+- `env.reset()` は `(observation, info)` のタプルを返す
+- `env.step(action)` は `(observation, reward, done, step_limit_reached, info)` の5要素タプルを返す
+- `action` は必ず `int` 型である必要がある（`numpy.int64` は不可）
+
+### 状態の扱い
+- 状態（観測）は `numpy.ndarray` として取得される
+- Qテーブルのキーとして使用するため、`tuple(state.astype(np.int32))` でタプル化する
+- `str(state)` は使用しない（メモリ効率が悪い）
+
+### アクションの型変換
+- `np.argmax()` の結果は `numpy.int64` を返すため、`int()` で明示的に変換
+- `env.action_space.sample()` も同様に `int()` で変換
+
+## ファイル構造
+- `rl_1.py`: Q学習による基本的な強化学習エージェント
+- `rl_test.py`: 環境のテスト・デバッグ用スクリプト
+- `requirements.txt`: 依存パッケージ一覧
+- `venv/`: 仮想環境（Gitにコミットしない）
+
+## 開発時の注意事項
+
+1. **型の一貫性**: アクションは常にPythonの `int` 型を使用
+2. **状態のハッシュ化**: 状態をタプル化してQテーブルのキーとして使用
+3. **環境の戻り値**: `reset()` と `step()` の戻り値を正しく受け取る
+4. **メモリ効率**: 大きな状態空間ではQテーブルが大きくなる可能性がある
+
+## よくある問題と解決策
+
+### エラー: "action must be an integer"
+- **原因**: `numpy.int64` が渡されている
+- **解決**: `int(action)` で明示的に変換
+
+### エラー: "unhashable type: 'numpy.ndarray'"
+- **原因**: numpy配列を辞書のキーとして使用しようとしている
+- **解決**: `tuple(state.astype(np.int32))` でタプル化
+
+### エラー: "too many values to unpack"
+- **原因**: `env.reset()` や `env.step()` の戻り値の数が合っていない
+- **解決**: `state, _ = env.reset()` や `obs, reward, done, step_limit, info = env.step(action)` のように正しく受け取る
+
+## 今後の拡張予定
+- DQN（Deep Q-Network）の実装
+- より高度な強化学習アルゴリズム（PPO、A3Cなど）
+- 学習の可視化
+- ハイパーパラメータの自動調整
+
